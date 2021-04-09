@@ -1,0 +1,77 @@
+
+pclift200@osjump-01:~$ ssh hostname
+
+Get IQN to create an initiator group on Solidfire:
+
+root@hostname:~# cat /etc/iscsi/initiatorname.iscsi
+
+## DO NOT EDIT OR REMOVE THIS FILE!
+## If you remove this file, the iSCSI daemon will not start.
+## If you change the InitiatorName, existing access control lists
+## may reject this initiator.  The InitiatorName must be unique
+## for each iSCSI initiator.  Do NOT duplicate iSCSI InitiatorNames.
+InitiatorName=iqn.1993-08.org.debian:01:22585b66fd63
+
+Login:
+/etc/init.d/open-iscsi restart
+iscsiadm -m discovery -t sendtargets -p 10.144.9.48 (MVIP of cluster)
+
+blkid
+ls –l /dev/disk/by-path/ | grep solidfire
+fdisk -c -u /dev/sds
+mkfs.xfs -K /dev/sds1
+df
+blkid
+mount -o noatime,discard,nobarrier /dev/sds1 /mnt/sfdisk1
+sudo /sbin/hdparm -Q /dev/sds
+vi /etc/udev/rules.d/99-solidfire.rules  <— not sure if this is important or not
+
+bonnie++ -d /mnt/sfdisk1/ -r 32240 -s 161200 -u root -x 10 -q >> ./bonnie_std_out.csv 2>>./bonnie_std.err &
+
+
+DD TESTS:
+root@hostname:~# ls -la /dev/disk/by-path/ | grep solidfire
+lrwxrwxrwx 1 root root   9 Feb  6 20:28 ip-10.144.9.48:3260-iscsi-iqn.2010-01.com.solidfire:puqs.ch2-g-test-paul.700-lun-0 -> ../../sds
+lrwxrwxrwx 1 root root  10 Feb  6 20:28 ip-10.144.9.48:3260-iscsi-iqn.2010-01.com.solidfire:puqs.ch2-g-test-paul.700-lun-0-part1 -> ../../sds1
+<snip>
+
+
+
+Running IO tests from a hypervisor is yielding great results.
+WRITES: 890MB/sec
+
+READS: 600MB/sec
+
+
+WRITE TEST:
+root@hostname:/mnt/sfdisk1# time sh -c "dd if=/dev/zero of=/mnt/sfdisk1/test4.tmp bs=4k count=4000000 && sync"
+4000000+0 records in
+4000000+0 records out
+
+16384000000 bytes (16 GB, 15 GiB) copied, 14.3497 s, 1.1 GB/s
+
+real 0m29.346s
+user 0m0.436s
+
+sys 0m13.964s
+
+FLUSH File Cached in RAM:
+if we skip this step- we will see 3GB/sec read from the OS level, and no IP on Solidfire side because the file will be read from RAM
+root@oscomp-ch2-g002:/mnt/sfdisk1# cd
+root@oscomp-ch2-g002:~# umount /mnt/sfdisk1
+root@oscomp-ch2-g002:~# mount -o noatime,discard,nobarrier /dev/sds1 /mnt/sfdisk1
+root@oscomp-ch2-g002:~# cd -
+
+/mnt/sfdisk1
+
+READ TEST:
+root@hostname:/mnt/sfdisk1# time sh -c "dd if=//mnt/sfdisk1/test4.tmp of=/dev/null bs=4k"
+4000000+0 records in
+4000000+0 records out
+
+16384000000 bytes (16 GB, 15 GiB) copied, 25.9042 s, 632 MB/s
+
+real 0m25.906s
+user 0m0.320s
+
+sys 0m8.248s
