@@ -1,0 +1,49 @@
+VATAPL-W0M9G8WM:~ pclift200$ 
+
+ssh -l sfadmin xx.xx.xx.xx
+SolidFire Element 9.0.0.1554
+Password 126: 
+
+SolidFire Element OS 9.0 (fluorine)
+
+  System load:  3.75               Processes:              516
+  Usage of /:   15.4% of 90.84GB   Users logged in:        0
+  Memory usage: 27%                IP address for Bond10G: 10.146.4.4
+  Swap usage:   0%
+
+  => /mnt/pendingDirtyBlocks is using 91.1% of 7.74GB
+
+sfapp BuildType=Release Element=fluorine Release=fluorine ReleaseShort=fluorine Version=9.0.0.1554 sfdev=9.46 Repository=fluorine Revision=71abe891944d Options=timing,timing BuildDate=2016-10-13T01:47:50UTC md5=b565e74d2b1f091eaad2b822854a1872
+  SolidFire node=[pistore-as-b118.ece.comcast.net] (nodeID 1) configured for cluster=[sf-as-b02]
+  Interfaces:
+      CIPI: Bond10G (10.146.4.4)
+      MIPI: Bond10G (10.146.4.4)
+      SIPI: Bond10G (10.146.4.4)
+  Database Ensemble:
+      NodeID: 1 (10.146.4.4)
+      NodeID: 2 (10.146.4.5)
+      NodeID: 3 (10.146.4.6)
+      NodeID: 4 (10.146.4.7)
+      NodeID: 5 (10.146.4.8)
+  NVRAM: Radian (/dev/nvme0n1)
+  OTPW passwords remaining: 999
+Last login: Thu Jan 12 04:15:32 2017 from 96.118.49.64
+
+
+
+sfadmin@xxx-xx-xx:~$ 
+iperf -s
+------------------------------------------------------------
+Server listening on TCP port 5001
+TCP window size: 85.3 KByte (default)
+------------------------------------------------------------
+[  4] local 10.146.4.4 port 5001 connected with 10.146.4.5 port 35094
+[ ID] Interval       Transfer     Bandwidth
+[  4]  0.0-10.0 sec  10.1 GBytes  
+8.66 Gbits/sec
+
+[  5] local 10.146.4.4 port 5001 connected with 10.146.4.5 port 35738
+[  5]  0.0-10.0 sec  10.5 GBytes 
+ 9.01 Gbits/sec
+ 
+packet_write_wait:
